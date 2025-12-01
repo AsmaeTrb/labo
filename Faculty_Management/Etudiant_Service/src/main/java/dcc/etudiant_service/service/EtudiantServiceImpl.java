@@ -8,6 +8,7 @@ import dcc.etudiant_service.FeignClient.FiliereClient;
 import dcc.etudiant_service.entity.Etudiant;
 import dcc.etudiant_service.mapper.EtudiantMapper;
 import dcc.etudiant_service.repository.EtudiantRepository;
+import jakarta.persistence.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -47,8 +48,10 @@ public class EtudiantServiceImpl implements EtudiantService {
         savedEtudiant.setFiliere(filiereRestClient.getFiliereById(savedEtudiant.getIdFiliere()));
         return etudiantMapper.Etudiant_to_DTO(savedEtudiant);
     }
-
-
+public List<Filiere> getAllFilieres(){
+        List<Filiere> filieres = filiereRestClient.getAllFilieres();
+        return filieres;
+}
     @Override
     public List<ResponseEtudiantDTO> getAllEtudiants() {
         List<Etudiant> etudiants = etudiantRepository.findAll();
@@ -70,7 +73,6 @@ public class EtudiantServiceImpl implements EtudiantService {
     public ResponseEtudiantDTO getEtudiantById(Integer id_etudiant) {
         Etudiant etudiant = etudiantRepository.findById(id_etudiant).orElse(null);
         if (etudiant == null) return null;
-
         // si etudiant existe on récuperer filiere.
         Filiere filiere = filiereRestClient.getFiliereById(etudiant.getIdFiliere());
         etudiant.setFiliere(filiere);

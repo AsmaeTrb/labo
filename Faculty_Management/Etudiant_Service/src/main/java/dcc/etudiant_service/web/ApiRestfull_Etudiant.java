@@ -1,5 +1,5 @@
 package dcc.etudiant_service.web;
-;
+import dcc.etudiant_service.DTO.Filiere;
 import dcc.etudiant_service.DTO.RequestEtudiantDTO;
 import dcc.etudiant_service.DTO.ResponseEtudiantDTO;
 import dcc.etudiant_service.service.EtudiantServiceImpl;
@@ -98,6 +98,12 @@ public class ApiRestfull_Etudiant {
         ResponseEtudiantDTO responseEtudiantDTO = etudiantService.getEtudiantById(id);
         return ResponseEntity.ok(responseEtudiantDTO);
     }
+    @GetMapping("/filieres")
+    public ResponseEntity<List<Filiere>> getFilieres() {
+        List<Filiere> filieres =etudiantService.getAllFilieres();
+        return ResponseEntity.ok(filieres);
+    }
+
 
     @Operation(
             summary = "Mettre à jour un étudiant",
