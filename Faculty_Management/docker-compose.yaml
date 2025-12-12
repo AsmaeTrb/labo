@@ -1,0 +1,102 @@
+services:
+
+  faculty-discovery-service:
+    build: ./Discovery-Service
+    container_name: faculty-discovery-service
+    ports:
+     - '8761:8761'
+    healthcheck:
+
+     test: ["CMD","curl","http://localhost:8761/actuator/health"]
+     interval: 40s
+     retries: 4
+  faculty-config-service:
+     build: ./Configuration_Service
+     container_name: faculty-config-service
+     ports:
+       - '9999:9999'
+     environment:
+       - DISCOVERY_SERVICE_URL=http://faculty-discovery-service:8761/eureka
+     healthcheck:
+       test: ["CMD","curl","http://localhost:9999/actuator/health"]
+       interval: 10s
+       retries: 7
+     depends_on:
+        faculty-discovery-service:
+          condition: service_healthy
+  faculty-gateway-service:
+     build: ./Gateway-Service
+     container_name: faculty-gateway-service
+     ports:
+       - '8888:8888'
+     environment:
+       - DISCOVERY_SERVICE_URL=http://faculty-discovery-service:8761/eureka
+     healthcheck:
+       test: ["CMD","curl","http://localhost:8888/actuator/health"]
+       interval: 10s
+       retries : 5
+     depends_on:
+         faculty-discovery-service:
+           condition: service_healthy
+  faculty-security-service:
+     build: ./Security-Service
+     container_name: faculty-security-service
+     ports:
+       - '9090:9090'
+     environment:
+       - DISCOVERY_SERVICE_URL=http://faculty-discovery-service:8761/eureka
+     healthcheck:
+      test: ["CMD","curl","http://localhost:9090/actuator/health"]
+      interval: 10s
+      retries: 4
+     depends_on:
+      faculty-discovery-service:
+           condition: service_healthy
+  faculty-mysql-service:
+      image: mysql:8.0
+      container_name: faculty-mysql-service
+      environment:
+         MYSQL_ROOT_PASSWORD: Asmae.2020
+         MYSQL_DATABASE: faculty_db
+      ports:
+          - "3307:3306"
+      volumes:
+       - mysql-data:/var/lib/mysql
+
+  faculty-filiere-service :
+    build: ./Filiere_Service
+    container_name: faculty-filiere-service
+    ports:
+      - '8081:8081'
+    environment:
+      - DISCOVERY_SERVICE_URL=http://faculty-discovery-service:8761/eureka
+      - CONFIG_SERVICE_URL=http://faculty-config-service:9999
+    healthcheck:
+      test: ["CMD","curl","http://localhost:8081/actuator/health"]
+      interval: 10s
+      retries: 4
+    depends_on:
+      faculty-config-service:
+        condition: service_healthy
+      faculty-mysql-service: # <-- AJOUTER CETTE LIGNE
+        condition: service_started
+  faculty-etudiant-service:
+    build: ./Etudiant_Service
+    container_name: faculty-etudiant-service
+    ports:
+      - '8082:8082'
+    environment:
+      - DISCOVERY_SERVICE_URL=http://faculty-discovery-service:8761/eureka
+      - CONFIG_SERVICE_URL=http://faculty-config-service:9999
+    healthcheck:
+      test: [ "CMD","curl","http://localhost:8082/actuator/health" ]
+      interval: 10s
+      retries: 4
+    depends_on:
+        faculty-config-service:
+          condition: service_healthy
+        faculty-mysql-service: # <-- AJOUTER CETTE LIGNE
+          condition: service_started
+
+volumes:
+    mysql-data:
