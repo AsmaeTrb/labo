@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment    # indiquer aux Kubernetes de créer un Deployment.
+metadata:           # Informations de base :
+  name: faculty-security-service   # Le nom du Deployment.
+spec:               # Configuration du Deployment.
+  replicas: 1       # Nombre de Pods à exécuter → notre cas est 1 seul Pod.
+  selector:
+    matchLabels:    # Comment Kubernetes reconnaît les Pods qui appartiennent au Deployment :
+      app: faculty-security-service
+  template:       # Modèle du Pod à créer
+    metadata:
+      labels:
+        app: faculty-security-service
+    spec:
+      containers:    # Kubernetes lance un conteneur avec :
+        - name: faculty-security-service  # nom de conteneur dans un pod
+          image: faculty_management-faculty-security-service:latest # image de conteneur
+          #imagePullPolicy: Never
+          ports:
+            - containerPort: 9090
+          env:
+            - name: DISCOVERY_SERVICE_URL
+              value: http://faculty-discovery-service.default.svc.cluster.local:8761/eureka
+
+          readinessProbe: # vérifier etat de santé   --> Vérifie si prête à recevoir du trafic
+            httpGet:
+              path: /actuator/health
+              port: 9090
+            initialDelaySeconds: 5 # attendre 5s avant la 1ère vérification
+            periodSeconds: 10       # tester toutes les 5s
+            failureThreshold: 4    #si 4 échecs → Pod marqué “not ready”
+---
+apiVersion: v1
+kind: Service # crées un Service qui expose ton Pod depuis l’extérieur du cluster.
+metadata:
+  name: faculty-security-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: faculty-security-service # nom de pod a exposé
+  ports:
+    - port: 9090        # port exposé par le service
+      targetPort: 9090  # port du conteneur
