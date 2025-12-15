@@ -1,26 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: $title$
+  name: faculty-discovery-service
   labels:
-    app: $title$
+    app: faculty-discovery-service
 spec:
-  replicas: $1$
+  replicas: 1
   selector:
     matchLabels:
-      app: $title$
+      app: faculty-discovery-service
   template:
     metadata:
-      name: $title$
+      name: faculty-discovery-service
       labels:
-        app: $title$
+        app: faculty-discovery-service
     spec:
       containers:
-        - name: $title$
-          image: $nginx$
-          imagePullPolicy: IfNotPresent
+        - name: faculty-discovery-service
+          image: faculty_management-faculty-discovery-service:latest
+          #imagePullPolicy: Never
           ports:
-            - containerPort: $80$
-              protocol: $TCP$
-      restartPolicy: Always
-      $END$
+            - containerPort: 8761
+          readinessProbe: # vérifier etat de santé   --> Vérifie si prête à recevoir du trafic
+             httpGet:
+               path: /actuator/health
+               port: 8761
+             initialDelaySeconds: 5 # attendre 5s avant la 1ère vérification
+             periodSeconds: 10       # tester toutes les 5s
+             failureThreshold: 4    #si 4 échecs → Pod marqué “not ready”
+---
+apiVersion: v1
+kind: Service # crées un Service qui expose ton Pod depuis l’extérieur du cluster.
+metadata:
+  name: faculty-discovery-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: faculty-discovery-service
+  ports:
+    - port: 8761        # port exposé par le service
+      targetPort: 8761  # port du conteneur

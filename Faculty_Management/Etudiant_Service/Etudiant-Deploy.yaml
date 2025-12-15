@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faculty-etudiant-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: faculty-etudiant-service
+  template:
+    metadata:
+      labels:
+        app: faculty-etudiant-service
+    spec:
+      containers:
+        - name: faculty-etudiant-service
+          image: faculty_management-faculty-etudiant-service:latest
+          #imagePullPolicy: Never
+          ports:
+            - containerPort: 8082
+          env:
+            - name: DISCOVERY_SERVICE_URL
+              value: http://faculty-discovery-service.default.svc.cluster.local:8761/eureka
+            - name: CONFIG_SERVICE_URL
+              value: http://faculty-config-service.default.svc.cluster.local:9999
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 4
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: faculty-etudiant-service
+spec:
+  type: ClusterIP
+  selector:
+    app: faculty-etudiant-service
+  ports:
+    - port: 8082
+      targetPort: 8082
