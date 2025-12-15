@@ -17,11 +17,11 @@ spec:
           image: faculty_management-faculty-filiere-service:latest
           #imagePullPolicy: Never
           ports:
-            - containerPort: 8082
+            - containerPort: 8081
           env:
             - name: DISCOVERY_SERVICE_URL
               value: http://faculty-discovery-service.default.svc.cluster.local:8761/eureka
-            - name: CONFIG_SERCICE_URL
+            - name: CONFIG_SERVICE_URL
               value: http://faculty-config-service.default.svc.cluster.local:9999
           readinessProbe:
             httpGet:
@@ -35,11 +35,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: faculty-etudiant-service
+  name: faculty-filiere-service
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
-    app: faculty-etudiant-service
+    app: faculty-filiere-service
   ports:
     - port: 8081
       targetPort: 8081
