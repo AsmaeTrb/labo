@@ -1,30 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-    <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>logstash-service:7000</destination>
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <mdc />
-                <context />
-                <logLevel />
-                <loggerName />
-                <pattern>
+
+    <!-- ✅ PROD / K8S : envoi vers Logstash -->
+    <springProfile name="!test">
+        <appender name="logstash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>logstash-service:7000</destination>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <mdc />
+                    <context />
+                    <logLevel />
+                    <loggerName />
                     <pattern>
-                        {
-                        "app": "test-log",
-                        "message": "%message"
-                        }
+                        <pattern>
+                            {"app":"test-log","message":"%message"}
+                        </pattern>
                     </pattern>
-                </pattern>
-                <threadName />
-                <message />
-                <logstashMarkers />
-                <stackTrace />
-            </providers>
-        </encoder>
-    </appender>
-    <root level="info">
-        <appender-ref ref="logstash" />
-    </root>
+                    <threadName />
+                    <message />
+                    <logstashMarkers />
+                    <stackTrace />
+                </providers>
+            </encoder>
+        </appender>
+
+        <root level="info">
+            <appender-ref ref="logstash" />
+        </root>
+    </springProfile>
+
+    <!-- ✅ TEST (Jenkins) : pas de Logstash, seulement console -->
+    <springProfile name="test">
+        <root level="info"/>
+        <!-- base.xml configure déjà CONSOLE, donc root suffit -->
+    </springProfile>
+
 </configuration>
