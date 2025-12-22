@@ -15,7 +15,6 @@ spec:
       containers:
         - name: faculty-etudiant-service
           image: faculty_management-faculty-etudiant-service:latest
-          #imagePullPolicy: Never
           ports:
             - containerPort: 8082
           env:
