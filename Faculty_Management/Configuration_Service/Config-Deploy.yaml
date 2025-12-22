@@ -1,43 +1,42 @@
 apiVersion: apps/v1
-kind: Deployment    # indiquer aux Kubernetes de créer un Deployment.
-metadata:           # Informations de base :
-  name: faculty-config-service   # Le nom du Deployment.
-spec:               # Configuration du Deployment.
-  replicas: 1       # Nombre de Pods à exécuter → notre cas est 1 seul Pod.
+kind: Deployment
+metadata:
+  name: faculty-config-service
+spec:
+  replicas: 1
   selector:
-    matchLabels:    # Comment Kubernetes reconnaît les Pods qui appartiennent au Deployment :
+    matchLabels:
       app: faculty-config-service
-  template:       # Modèle du Pod à créer
+  template:
     metadata:
       labels:
         app: faculty-config-service
     spec:
-      containers:    # Kubernetes lance un conteneur avec :
-        - name: faculty-config-service  # nom de conteneur dans un pod
-          image: faculty_management-faculty-config-service:latest # image de conteneur
-          #imagePullPolicy: Never
+      containers:
+        - name: faculty-config-service
+          image: faculty_management-faculty-config-service:latest
           ports:
-            - containerPort: 9999 # port interne de conteneur --> Le conteneur écoute sur le port 871
+            - containerPort: 9999
           env:
             - name: DISCOVERY_SERVICE_URL
               value: http://faculty-discovery-service.default.svc.cluster.local:8761/eureka
 
-          readinessProbe: # vérifier etat de santé   --> Vérifie si prête à recevoir du trafic
+          readinessProbe:
             httpGet:
               path: /actuator/health
               port: 9999
-            initialDelaySeconds: 5 # attendre 5s avant la 1ère vérification
-            periodSeconds: 10       # tester toutes les 5s
-            failureThreshold: 4    #si 4 échecs → Pod marqué “not ready”
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 4
 ---
 apiVersion: v1
-kind: Service # crées un Service qui expose ton Pod depuis l’extérieur du cluster.
+kind: Service
 metadata:
   name: faculty-config-service
 spec:
   type: LoadBalancer
   selector:
-    app: faculty-config-service # nom de pod a exposé
+    app: faculty-config-service
   ports:
-    - port: 9999        # port exposé par le service
-      targetPort: 9999  # port du conteneur
+    - port: 9999
+      targetPort: 9999
