@@ -15,7 +15,6 @@ spec:
       containers:
         - name: faculty-filiere-service
           image: faculty_management-faculty-filiere-service:latest
-          #imagePullPolicy: Never
           ports:
             - containerPort: 8081
           env:
