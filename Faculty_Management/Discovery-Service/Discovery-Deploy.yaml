@@ -18,19 +18,18 @@ spec:
       containers:
         - name: faculty-discovery-service
           image: faculty_management-faculty-discovery-service:latest
-          #imagePullPolicy: Never
           ports:
             - containerPort: 8761
-          readinessProbe: # vérifier etat de santé   --> Vérifie si prête à recevoir du trafic
+          readinessProbe:
              httpGet:
                path: /actuator/health
                port: 8761
-             initialDelaySeconds: 5 # attendre 5s avant la 1ère vérification
-             periodSeconds: 10       # tester toutes les 5s
-             failureThreshold: 4    #si 4 échecs → Pod marqué “not ready”
+             initialDelaySeconds: 5
+             periodSeconds: 10
+             failureThreshold: 4
 ---
 apiVersion: v1
-kind: Service # crées un Service qui expose ton Pod depuis l’extérieur du cluster.
+kind: Service
 metadata:
   name: faculty-discovery-service
 spec:
@@ -38,5 +37,5 @@ spec:
   selector:
     app: faculty-discovery-service
   ports:
-    - port: 8761        # port exposé par le service
-      targetPort: 8761  # port du conteneur
+    - port: 8761
+      targetPort: 8761

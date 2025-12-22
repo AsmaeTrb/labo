@@ -1,7 +1,4 @@
-FROM openjdk:18-ea-1-jdk-oracle
-
+FROM eclipse-temurin:17-jre
 VOLUME /tmp
-
 COPY target/*.jar app.jar
-
-ENTRYPOINT ["java", "-jar" , "app.jar"]
+ENTRYPOINT ["java","-jar","/app.jar"]
